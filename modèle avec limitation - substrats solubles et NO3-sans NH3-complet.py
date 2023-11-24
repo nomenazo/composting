@@ -19,6 +19,10 @@ from scipy.integrate import trapz
 from math import log
 
 
+# - Dans ce code, toutes les réactions sont présentes, sauf celle qui produit du CH4
+# - Seules les fonctions de limitation par les substrats solubles fSc et par le nitrate fNO3 sont intégrés
+# - On fait varier les valeurs initiales des biomasses (Xmb, Xtb, Xma, Xta, Xmf, Xtf, Xa)
+
 # In[5]:
 
 
@@ -33,14 +37,14 @@ class Compostage:
         
         self.technology = technology
         self.aer =aer
-        self.duration = duration
-        self.MB = MB
-        self.TB = TB
-        self.MA = MA
-        self.TA = TA
-        self.MF = MF
-        self.TF = TF
-        self.Xa = Xa
+        self.duration = duration #durée de la simulation en h-1
+        self.MB = MB #valeur initiale des bactéries mésophiles
+        self.TB = TB #valeur initiale des bactéries thermophiles
+        self.MA = MA #valeur initiale des actinomycètes mésophiles
+        self.TA = TA #valeur initiale des actinomycètes thermophiles
+        self.MF = MF #valeur initiale des fungi mésophiles
+        self.TF = TF #valeur initiale des fungi thermophiles
+        self.Xa = Xa #valeur initiale des biomasses autotrophes
         self.xtemp = xtemp
         
         with pd.ExcelFile(data_path) as f:
@@ -65,11 +69,11 @@ class Compostage:
             
             #biomass yield
             biomass = pd.read_excel(data_path,'Xyield', index_col=0).fillna(0.0)
-            self.Y_S = 1/biomass['Y(X/S)']
-            self.Y_O2 = 1/biomass['Y(X/O2)']
-            self.Y_NH3 = 1/biomass['Y(X/NH3)']
-            self.Y_CO2 = 1/biomass['Y(X/CO2)']
-            self.Y_W = 1/biomass['Y(X/H2O)']
+            self.Y_S = 1/biomass['Y(X/S)'] #rendement de la biomasse sur le substrat kgX/kgS
+            self.Y_O2 = 1/biomass['Y(X/O2)'] #rendement de la biomasse sur l'oxygène' kgX/kgO2
+            self.Y_NH3 = 1/biomass['Y(X/NH3)'] #rendement de la biomasse sur le NH3 kgX/kgNH3
+            self.Y_CO2 = 1/biomass['Y(X/CO2)'] #rendement de la biomasse sur le CO2 kgX/kgCO2
+            self.Y_W = 1/biomass['Y(X/H2O)'] #rendement de la biomasse sur l'eau kgX/kgW
             
             
             
@@ -523,58 +527,70 @@ essai3.solution.y[12][0:1000]
 plt.plot(essai3.solution.t, np.cumsum(essai3.solution.y[20]))
 
 
-# In[126]:
+# In[286]:
 
 
 essai4 = Compostage(Data3, Data4, 'test_fitting', 'Passive aeration', 480, 0.0001, 0.0001, 0.0001,0.0001,0.0001,0.0001,0.0001,0)
 
 
-# In[127]:
+# In[287]:
 
 
 essai4.resolution()
 
 
-# In[128]:
+# In[288]:
 
 
 essai4.solution
 
 
-# In[129]:
+# In[289]:
 
 
 essai4.emissions()
 
 
-# In[131]:
+# In[290]:
 
 
 plt.plot(essai4.solution.y[0])
 
 
-# In[1171]:
+# In[291]:
 
 
-essai5 = Compostage(Data3, Data4, 'test_fitting', 'Passive aeration', 480, 1e-5, 1e-5, 1e-5,1e-5,1e-5,1e-5,1e-5,0)
+essai4.courbes()
 
 
-# In[1172]:
+# In[296]:
+
+
+essai5 = Compostage(Data3, Data4, 'test_fitting', 'Passive aeration', 1000, 1e-5, 1e-5, 1e-5,1e-5,1e-5,1e-5,1e-5,0)
+
+
+# In[297]:
 
 
 essai5.resolution()
 
 
-# In[1173]:
+# In[298]:
 
 
 essai5.emissions()
 
 
-# In[1371]:
+# In[299]:
 
 
 plt.plot(essai5.solution.y[7])
+
+
+# In[300]:
+
+
+essai5.courbes()
 
 
 # In[1182]:
