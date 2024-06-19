@@ -11,7 +11,7 @@ for i=2:42
    tspan(i)=tspan(i-1)+24;
 end;
 
-[t,y]=ode15s('compostfit',[tspan],[y0]);
+[t,y]=ode45('compostfit',[tspan],[y0]);
 
 
 %[t,y]=ode15s('compost',[0 400],y0);
