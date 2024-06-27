@@ -1,8 +1,5 @@
-function dydt=compostfit2N(t,y); %fitting with more variables than compostfit (CH4, O2)
-global thetag;
-%1er essai de fitting par la constante de décès
-%bd=thetag
-kNH3 = thetag; %Mua et khNH3
+function dydt=compostfitted_NH3modified(t,y); %we add N emissions in this code
+
 
 %insolubles substrates
 C=y(1);	% carbohydrate kg/kgTM
@@ -36,8 +33,9 @@ Xa = y(26);
 NO3 = y(27);
 N2O =y(28);
 N2 = y(29);
-NH3 = y(30);
+NH3gaz = y(30); %ammoniac dans la phase gazeuse
 NH4 = y(31);
+NH3emit = y(32); %ammoniac volatilisé
 
 
 TM= 0.6; %kg total matter
@@ -45,7 +43,7 @@ Ta = 285; %External temperature
 
 %kh = [0.0001 0.0378 0.2991 2.8873e-05 0.0271 0.0153 0.009 0.0025 0.0078 0.009 0.0025 0.0313];
 kh=[0.0293    0.1508    1.4563e-07    0.0053    0.1731    0.0182    0.0090    0.0070    0.0068    0.0090    0.0070    0.0068];
-mu = [0.2 0.18 0.1 0.12 0.1 0.1]; %specific growth rate (h-1)
+mu = [0.2 0.18 0.1 0.12 0.1 0.1 0.03]; %specific growth rate (h-1)
 bd = [0.03 0.02 0.01 0.015 0.01 0.01 0.0083]; %death rate (h-1)
 K=[6.2e-5 1e-4 0.2 0.0025 0.0064 0.0608e-5]; %kinetic parameters
 KT = [440 0.072 1 2 0.09 1]; %parameters for temperature module
@@ -62,7 +60,6 @@ Yxa_no3 = 0.0390553; %Yield coeff of autotroph biomass on NO3 kgXa/kgNO3
 Yxa_nh4 = 0.13; %Yield coeff of autotroph biomass on NO3 kgXa/kgNH4
 Yx_nh4 = [6.64705882352941	2.490625447	6.647058824	6.64705882352941	2.490625447	6.647058824	0.705882353	2.490625447	6.647058824	6.647058824	0.705882353	2.490625447	6.647058824	6.647058824	14.52941176	2.069869946	14.52941176	14.52941176	14.52941176	14.52941176	2.069869946	14.52941176	14.52941176	14.52941176
 ]; %Yield coeff of heterotrophic biomass on NH3 kgX/kgNH3
-%kinXa = 0.003; 
 
 
 Ks = K(1); %substrate saturation for monod kinetics (kgSc/dm3W)
@@ -118,7 +115,7 @@ mma = mu(3);
 mta = mu(4);
 mmf = mu(5);
 mtf = mu(6);
-%ma = mu(7)*0.1; %growth rate of autotroph biomass
+ma = mu(7)*0.1; %growth rate of autotroph biomass
 
 %death rate
 bmb = bd(1)*0.4;
@@ -128,11 +125,6 @@ bta = bd(4)*1;
 bmf = bd(5)*1;
 btf = bd(6)*1;
 ba = bd(7); %death constant of autotroph biomass
-
-%kinetic of Xa
-ma = kNH3(1);
-khNH3 = kNH3(2);
-
 
 %Inverse of yield of biomass on CO2
 Ymb_c_c = 1/Yx_co2(1) ; %MB on Sc
@@ -262,9 +254,7 @@ fT1 = ((Ti-Tmax1)*(Ti-Tmin1)^2)/((Topt1-Tmin1)*((Topt1-Tmin1) *(Ti-Topt1)-(Topt1
 %fT = 0.01;
 
 %Ammoniac equilibrum in liquid-gas interface
-%khNH3 = 1exp(160.559 - (8621.06/T)-(25.6767*log(T))+(0.035388*T)); %Pa.mol.l-1
-pNH3 = khNH3*(NH4/W); %*101325; %Henry law for liquid-gas interface %Pa
-mNH3 = 0.017 * pNH3 * (Vgas/(R*T)); %NH3 in the gas phase
+Henh3 =101325* exp(160.559 - (8621.06/T)-(25.6767*log(T))+(0.035388*T)); %Pa.mol.l-1%
 
 %Limitation function by the oxygen
 xO2 = 0.16; %fraction molaire de O2 dans le mélange
@@ -272,7 +262,7 @@ xO2 = 0.16; %fraction molaire de O2 dans le mélange
 
 khO2 = 1.4e-3; %mol/m3.Pa Henry constant for oxygen, mais devra être en fonction de la T
 
-ntot = (1/(1-xO2))*((CO2/0.044)+(CH4/0.016)+(mNH3/0.017)+(N2O/0.044)+(N2/0.028))*TM;  %mol
+ntot = (1/(1-xO2))*((CO2/0.044)+(CH4/0.016)+(NH3gaz/0.017)+(N2O/0.044)+(N2/0.028))*TM;  %mol
 Pio2 = (xO2*ntot*R*T)/Vgas; %Pa
 O2diss = khO2 * Pio2 * (0.032*1e-3); %kg/l
 
@@ -283,7 +273,7 @@ fO2nit = O2diss/(kO2nit + O2diss); %autotroph activity
 
 %Limitation function of ammonium for nitrification
 Kn = 10^((0.051*(T-275)-7.158)); %kg/l
-fNH4nit = (NH4/W)/(Kn + (NH4/W));
+fNH4nit = 1; %(NH4/W)/(Kn + (NH4/W));
 
 %Limitation of denitrification by NO3
 kNO3 = 8.4e-2; %kg/l 
@@ -291,9 +281,9 @@ flimNO3 = (NO3/W)/(kNO3+(NO3/W));
 
 %Limitation of denitrification by temperature
 if T<286
-    fTdenit =exp((((T-275)-11)*log(89)-9*log(2.1))/10);
+    fTdenit = exp((((T-275)-11)*log(89)-9*log(2.1))/10);
 else
-    fTdenit =exp((((T-275)-20)*log(2.1))/10);
+    fTdenit = exp((((T-275)-20)*log(2.1))/10);
 end;
 
 
@@ -358,7 +348,7 @@ v43 = kdec*Xdb;
 v44 = ma * Xa  * fNH4nit * fO2nit;
 
 %denitrification
-pmaxdenit = 0.042; %kg(N2O+N2)/kgNO3.h
+pmaxdenit = 0.042*10; %kg(N2O+N2)/kgNO3.h
 
 pN2Odenit = 0.2; %kg(N2O)/kg(N2O+N2)
 
@@ -371,8 +361,8 @@ v46 = ba * Xa;
 
 rhoair = 1.2; %kg/m3
 
-%v47 = Qair * mNH3 /(rhoair * Vgas); %NH3 emitted by aeration
-v47 = 0.012 * mNH3/Vgas;
+%v47 = Qair * NH3gaz /(rhoair); %NH3 emitted by aeration 
+v47 = 0.012 * NH3gaz/Vgas
 
 %Global equations
 dCdt= -v1 -v4;
@@ -405,8 +395,6 @@ dWdt = (Ymb_c_h)*v13+(Ymb_p_h)*v14+(Ymb_l_h)*v15+(Ytb_c_h)*v16+(Ytb_p_h)*v17+(Yt
 
 
 
-He =  4.39751e9; %101325 *exp(66.7354-(8747.55/T)-24.4526*log(T/100)); %Pa %
-
 
 %temperature module
 Qbio = hbio *(((v13/Yx_O2mol(1))+(v14/Yx_O2mol(2))+(v15/Yx_O2mol(3))+(v16/Yx_O2mol(4))+(v17/Yx_O2mol(5))+(v18/Yx_O2mol(6))+(v19/Yx_O2mol(7))+(v20/Yx_O2mol(8))+...
@@ -428,7 +416,7 @@ dCH4oxidt = Vmax*((CH4gen/W)/(km+(CH4gen/W)))*((O2diss/(32e-3))/(Kch4_O2+(O2diss
 
 dCH4dt= dCH4gendt - dCH4oxidt ;
 
-%nitrification module
+%nitrification-denitrication module
 dXadt = v44 - v46;
 
 dNO3dt = (1/Yxa_no3)*v44 - v45;
@@ -437,14 +425,23 @@ dN2Odt = pN2Odenit*v45;
 
 dN2dt = (1 - pN2Odenit)*v45;
 
-dNH3dt = v47;
+%volatilization module
 
-dNH4dt = - (Ymb_c_nh4)*v13+(Ymb_p_nh4)*v14-(Ymb_l_nh4)*v15-(Ytb_c_nh4)*v16+(Ytb_p_nh4)*v17-(Ytb_l_nh4)*v18-(Yma_c_nh4)*v19+(Yma_p_nh4)*v20-(Yma_l_nh4)*v21-...
-(Yma_h_nh4)*v22-(Yta_c_nh4)*v23+(Yta_p_nh4)*v24-(Yta_l_nh4)*v25-(Yta_h_nh4)*v26-(Ymf_c_nh4)*v27+(Ymf_p_c)*v28-(Ymf_l_nh4)*v29-...
-(Ymf_h_nh4)*v30-(Ymf_lg_nh4)*v31-(Ytf_c_nh4)*v32+(Ytf_p_c)*v33-(Ytf_l_nh4)*v34-(Ytf_h_nh4)*v35-(Ytf_lg_nh4)*v36-(1/Yxa_nh4)*v44 - v47;
+klnh3 = 1000; %kg/Pa.h
 
 
+xnh4 = NH4/(0.017*W); %concentration molaire de NH4 dans la phase liquide
+
+NH4trans = klnh3*(Henh3*xnh4/TM - ((NH3gaz/0.017)*R*T/Vgas)); %kg/kgTM.h
+
+dNH4dt = -(1/Yxa_nh4)*v44 +(Ymb_p_nh4)*v14-(Ymb_l_nh4)*v15  + (Ytb_p_nh4)*v17 -(Ytb_l_nh4)*v18 -(Yma_c_nh4)*v19+(Yma_p_nh4)*v20-(Yma_l_nh4)*v21-...
+(Yma_h_nh4)*v22-(Yta_c_nh4)*v23+(Yta_p_nh4)*v24-(Yta_l_nh4)*v25-(Yta_h_nh4)*v26-(Ymf_c_nh4)*v27+(Ymf_p_c)*v28-(Ymf_l_nh4)*v29 - ...
+(Ymf_h_nh4)*v30-(Ymf_lg_nh4)*v31-(Ytf_c_nh4)*v32+(Ytf_p_c)*v33-(Ytf_l_nh4)*v34-(Ytf_h_nh4)*v35-(Ytf_lg_nh4)*v36- (Ymb_c_nh4)*v13-(Ytb_c_nh4)*v1 - NH4trans;
+
+dNH3gazdt = NH4trans - v47;
+
+dNH3emitdt = v47 ;
 
 
 dydt = [dCdt,dPdt,dLdt,dHdt,dCEdt,dLGdt,dXidt, dScdt,dSpdt,dSldt,dShdt,dSlgdt, dXmbdt,dXtbdt,dXmadt,dXtadt,dXmfdt,dXtfdt, dXdbdt, dCO2dt, dWdt,dTdt,dCH4gendt, dCH4oxidt,dCH4dt,...
-    dXadt, dNO3dt, dN2Odt, dN2dt, dNH3dt, dNH4dt]'; %,dO2transdt,dO2indt]' %]';
+    dXadt, dNO3dt, dN2Odt, dN2dt, dNH3gazdt, dNH4dt, dNH3emitdt]';

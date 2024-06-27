@@ -1,6 +1,6 @@
-function z=rcompostfitN(kinXa,t);
+function z=rcompostfitN(kNH3,t);
 global thetag;
-thetag = kinXa;
+thetag = kNH3;
 
 %initialisation des variables
 y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 5e-4 5e-4 1e-4 1e-4 5e-6 5e-6 0 0 0.710953 293 0 0 0 1e-5 0 0 0 0 0.00036]; %O2init %kg/kgTM %2.6954e-4
@@ -13,7 +13,7 @@ end;
 
 %tspan = [0 5000];
 
-options = odeset( 'RelTol',1e-12,'AbsTol',1e-14); %'Maxstep', 1e-15,
+options = odeset( 'RelTol',1e-10,'AbsTol',1e-12 ) ;%,'Maxstep', 1e-14);
 
 %options = odeset('Events', @events);
 %[t,y]=ode45_with_corrections('compostfitted',[tspan],[y0]);
@@ -72,6 +72,6 @@ simulNH3 = [NH3(1), NH3(2), NH3(3), NH3(4), NH3(5), NH3(6), NH3(7), NH3(8), NH3(
     NH3(85), NH3(86), NH3(87), NH3(88), NH3(89), NH3(90), NH3(91)];
 
 
-simulNNH3 = (0.014/0.017)*simulNH3;
+%simulNNH3 = (0.014/0.017)*simulNH3;
 
 z= [simulNH3];

@@ -1,23 +1,23 @@
 clear;
 
 %initialisation des variables
-y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 5e-4 5e-4 1e-4 1e-4 1e-6 1e-6 0 0 0.710953 293 0 0 0 1e-4 0 0 0 0 0.00036];%O2init %kg/kgTM %2.6954e-4
+y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 5e-4 5e-4 1e-4 1e-4 1e-6 1e-6 0 0 0.710953 293 0 0 0 1e-4 0 0 0 0 0.00036 0];%O2init %kg/kgTM %2.6954e-4
 %y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 5e-2 5e-2 1e-4 1e-4 5e-6 5e-6 0 0 0.710953 293 0 0 0 1e-5 0 0 0 0 0.00036];%O2init %kg/kgTM %2.6954e-4
 
 
 
-tspan(1)=0;
-for i=2:91
-    tspan(i)=tspan(i-1)+24;
-end;
+%tspan(1)=0;
+%for i=2:91
+ %   tspan(i)=tspan(i-1)+24;
+%end;
 
-%tspan = [0 2200];
+tspan = [0 10000];
 
 options = odeset( 'RelTol',1e-12,'AbsTol',1e-14);
 
 %options = odeset('Events', @events);
 %[t,y]=ode45_with_corrections('compostfitted',[tspan],[y0]);
-[t,y]=ode15s('compostfitted_Npart',[tspan],[y0],options)
+[t,y]=ode15s('compostfitted_NH3modified',[tspan],[y0],options)
 
 
 
@@ -51,8 +51,9 @@ Xa=y(:,26);
 NO3=y(:,27);
 N2O=y(:,28);
 N2=y(:,29);
-NH3=y(:,30);
+NH3gaz=y(:,30);
 NH4=y(:,31);
+NH3emit = y(:,32);
 
 
 
@@ -61,14 +62,11 @@ NH4=y(:,31);
 %y = max(0,y);
 CH4 = max(0,CH4);
 
-NH4 = max(0,NH4);
-
 CCO2= (0.012/0.044) * CO2;
 
 CCH4 = (0.012/0.016)*CH4;
 
-NNH3 = (0.014/0.017)*NH3;
-
+NNH3 = (0.014/0.017)*NH3emit;
 
 NN2 = N2;
 
@@ -78,12 +76,8 @@ Cinit= 0.1288;
 Ninit = 0.008/0.6;
 
 Ccompost= Cinit - CCO2 - cumsum(CCH4);
-Cemit = (CCO2+cumsum(CCH4))/Cinit;
 
 Ncompost = Ninit - NNH3- NN2 - NN2O;
-Nemit = (NNH3+NN2+NN2O)/Ninit;
-
-CNratio = Ccompost/Ncompost;
 %y(y<0)=0;
 
 dataCO2= [0	0.010658307	0.012064092	0.020488396	0.023870271	0.030051839	0.032267393  ...
@@ -99,7 +93,7 @@ dataCO2= [0	0.010658307	0.012064092	0.020488396	0.023870271	0.030051839	0.032267
     0.073311255	0.073726422	0.073782105	0.073784744	0.073763294	0.073971598	0.073904728	...
     0.074438034	0.074721419	0.07484848	0.075038274	0.075373127	0.075577342	0.075553739	...
     0.075661505	0.075922374	0.075913674	0.075927796	0.07593392	0.076546655	0.076825088	] ; %...
-   % 0.076796612	0.07708573	0.077181414	0.077353359	0.076898372]; %CCO2
+   % 0.076796612	0.07708573	0.077181414	0.077353359	0.076898372];
 
 dataNH3 = [9.50523E-05	8.3184E-05	8.5979E-05	9.59316E-05	0.000113998	0.000148685	0.000275354	0.000453294	0.000663354 ...
     0.000877706	0.001094094	0.001477452	0.001856072	0.002462657	0.003061782	0.003358049	0.003850929	0.004161586	0.00448449 ...
@@ -109,7 +103,7 @@ dataNH3 = [9.50523E-05	8.3184E-05	8.5979E-05	9.59316E-05	0.000113998	0.000148685
     0.009629212	0.009666273	0.009696949	0.00973921	0.009769989	0.009781303	0.009807082	0.009830799	0.009861079	0.00987839 ...
     0.009883663	0.009893537	0.009899967	0.009941319	0.009968676	0.009983343	0.010006289	0.009984702	0.009981679	0.010014646	...
     0.01003884	0.010053253	0.010052459	0.010067748	0.010092195	0.010103562	0.010108216	0.010127495	0.010150719	0.010153972	...
-    0.010160904	0.010176637	0.010192993	0.010204598	0.010211709	0.010217376	0.010233124	0.01024688	0.010250307	0.010252842	0.01027212	0.010298132]; %NH3
+    0.010160904	0.010176637	0.010192993	0.010204598	0.010211709	0.010217376	0.010233124	0.01024688	0.010250307	0.010252842	0.01027212	0.010298132];
 
 
 
@@ -118,57 +112,28 @@ dataNH3 = [9.50523E-05	8.3184E-05	8.5979E-05	9.59316E-05	0.000113998	0.000148685
 %title('Production of CCO2');
 %xlabel('time (h)');
 %ylabel('CO2-C (kg/kgTM)');
-%subplot(4,1,1);
-%plot(t,NH4,'r-') %,t,dataCO2,'k.');
-%title('Production of NH4');
-%xlabel('time (h)');
-%ylabel('NH4 (kg/kgTM)');
-%subplot(4,1,2);
-%plot(t,NNH3,'r-',t,dataNH3,'k.');
-%xlabel('time (h)');
-%ylabel('NH3-N (kg/kgTM)');
+subplot(3,1,1);
+plot(t,NH4,'r-');
+title('Production of NH4');
+xlabel('time (h)');
+ylabel('NH4 (kg/kgTM)');
+subplot(3,1,2);
+plot(t,NH3gaz,'r-') ; %,t,dataNH3,'k.');
+xlabel('time (h)');
+ylabel('NH3gaz (kg/kgTM)');
+subplot(3,1,3);
+plot(t,NH3emit,'r-') ; %,t,dataNH3,'k.');
+xlabel('time (h)');
+ylabel('NH3emit (kg/kgTM)');
 
 
 %subplot(2,1,1);
-%plot(t,NH3,'r-',t,dataNH3,'k.');
+%plot(t,N2,'r-') %,t,dataCO2,'k.');
 %xlabel('time (h)');
-%ylabel('NH3 (kg/kgTM)');
+%ylabel('N2 (kg/kgTM)');
 %subplot(2,1,2);
-%plot(t,NH4,'r-')
+%plot(t,N2O,'r-')
 %xlabel('time (h)');
-%ylabel('NH4 (kg/kgTM)');
-
-subplot(3,1,1);
-plot(t,Cemit);
-xlabel('time (h)');
-ylabel('Cemit (-)');
-subplot(3,1,2);
-plot(t,Nemit);
-xlabel('time (h)');
-ylabel('Nemit (-)');
-subplot(3,1,3);
-plot(t,CNratio);
-xlabel('time (h)');
-ylabel('C/N');
+%ylabel('N2O (kg/kgTM)');
 
 
-%subplot(7,1,2);
-%plot(t,CCO2);
-%xlabel('Time (h)');
-%ylabel('CCO2 (kg/kgTM)');
-%subplot(7,1,3);
-%plot(t,O2diss);
-%xlabel('Time (h)');
-%ylabel('O2diss (kg/kgTM)');
-%subplot(7,1,4);
-%plot(t,P);
-%xlabel('Time (h)');
-%ylabel('P (kg/kgTM)');
-%subplot(7,1,5);
-%plot(t,L);
-%xlabel('Time (h)');
-%ylabel('L (kg/kgTM)');
-%subplot(5,1,5);
-%plot(t,O2in);
-%xlabel('Time (h)');
-%ylabel('O2in (kg/kgTM)');

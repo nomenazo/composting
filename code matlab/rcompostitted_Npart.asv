@@ -141,15 +141,11 @@ dataNH3 = [9.50523E-05	8.3184E-05	8.5979E-05	9.59316E-05	0.000113998	0.000148685
 subplot(3,1,1);
 plot(t,Cemit);
 xlabel('time (h)');
-ylabel('Cemit (-)');
-subplot(3,1,2);
-plot(t,Nemit);
+ylabel('NH3 (kg/kgTM)');
+subplot(2,1,2);
+plot(t,NH4,'r-')
 xlabel('time (h)');
-ylabel('Nemit (-)');
-subplot(3,1,3);
-plot(t,CNratio);
-xlabel('time (h)');
-ylabel('C/N');
+ylabel('NH4 (kg/kgTM)');
 
 
 %subplot(7,1,2);

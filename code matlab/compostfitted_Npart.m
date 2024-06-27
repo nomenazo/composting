@@ -37,12 +37,14 @@ NH3 = y(30);
 NH4 = y(31);
 
 
-TM= 0.6; %kg total matter
+TM= 0.6; %kg total matter Komilis
+
+
 Ta = 285; %External temperature
 
 %kh = [0.0001 0.0378 0.2991 2.8873e-05 0.0271 0.0153 0.009 0.0025 0.0078 0.009 0.0025 0.0313];
 kh=[0.0293    0.1508    1.4563e-07    0.0053    0.1731    0.0182    0.0090    0.0070    0.0068    0.0090    0.0070    0.0068];
-mu = [0.2 0.18 0.1 0.12 0.1 0.1 0.03]; %specific growth rate (h-1)
+mu = [0.2 0.18 0.1 0.12 0.1 0.1 0.03]; %specific growth rate (h-1) ma = 0.03 0.006
 bd = [0.03 0.02 0.01 0.015 0.01 0.01 0.0083]; %death rate (h-1)
 K=[6.2e-5 1e-4 0.2 0.0025 0.0064 0.0608e-5]; %kinetic parameters
 KT = [440 0.072 1 2 0.09 1]; %parameters for temperature module
@@ -68,7 +70,7 @@ kdec = K(4); %microorganisms decomposition constant
 kO2=K(5); %oxygen saturation for heterotrophic activities (kgO2/l)
 kO2nit = K(6); %oxygen saturation for nitrification (kgO2/l)
 
-Vreactor = 0.002 ; %m3
+Vreactor = 0.002 ; %m3 
 Vwaste = 0.6/350; %m3%mass/rhobiowaste
 Vgas = Vreactor - Vwaste; % m3
 R = 8.134; %Pa.m3/mol.K
@@ -253,12 +255,14 @@ fT1 = ((Ti-Tmax1)*(Ti-Tmin1)^2)/((Topt1-Tmin1)*((Topt1-Tmin1) *(Ti-Topt1)-(Topt1
 %fT = 0.01;
 
 %Ammoniac equilibrum in liquid-gas interface
-khNH3 = exp(160.559 - (8621.06/T)-(25.6767*log(T))+(0.035388*T)); %atm.mol.l-1
+
+%khNH3 = exp(160.559 - (8621.06/T)-(25.6767*log(T))+(0.035388*T)) %atm.mol.l-1
+khNH3 = 0.6;
 pNH3 = khNH3*(NH4/W)*101325; %Henry law for liquid-gas interface %Pa
 mNH3 = 0.017 * pNH3 * (Vgas/(R*T)); %NH3 in the gas phase
 
 %Limitation function by the oxygen
-xO2 = 0.16; %fraction molaire de O2 dans le mélange
+xO2 = 0.18; %fraction molaire de O2 dans le mélange
 %xO2 = 0.005;
 
 khO2 = 1.4e-3; %mol/m3.Pa Henry constant for oxygen, mais devra être en fonction de la T
@@ -362,7 +366,10 @@ v46 = ba * Xa;
 
 rhoair = 1.2; %kg/m3
 
-v47 = Qair * mNH3 /(rhoair * Vgas); %NH3 emitted by aeration
+%v47 = Qair * mNH3 /(rhoair * Vgas); %NH3 emitted by aeration
+
+v47 = 0.012 * mNH3/Vgas; %si on considère l'aération dans l'article=200ml/mn = 0.012m3/h
+
 
 %Global equations
 dCdt= -v1 -v4;
@@ -431,7 +438,7 @@ dNH3dt = v47;
 
 dNH4dt = -(1/Yxa_nh4)*v44 +(Ymb_p_nh4)*v14-(Ymb_l_nh4)*v15  + (Ytb_p_nh4)*v17 -(Ytb_l_nh4)*v18 -(Yma_c_nh4)*v19+(Yma_p_nh4)*v20-(Yma_l_nh4)*v21-...
 (Yma_h_nh4)*v22-(Yta_c_nh4)*v23+(Yta_p_nh4)*v24-(Yta_l_nh4)*v25-(Yta_h_nh4)*v26-(Ymf_c_nh4)*v27+(Ymf_p_c)*v28-(Ymf_l_nh4)*v29-...
-(Ymf_h_nh4)*v30-(Ymf_lg_nh4)*v31-(Ytf_c_nh4)*v32+(Ytf_p_c)*v33-(Ytf_l_nh4)*v34-(Ytf_h_nh4)*v35-(Ytf_lg_nh4)*v36- (Ymb_c_nh4)*v13-(Ytb_c_nh4)*v16;
+(Ymf_h_nh4)*v30-(Ymf_lg_nh4)*v31-(Ytf_c_nh4)*v32+(Ytf_p_c)*v33-(Ytf_l_nh4)*v34-(Ytf_h_nh4)*v35-(Ytf_lg_nh4)*v36- (Ymb_c_nh4)*v13-(Ytb_c_nh4)*v16 - v47;
 
 
 

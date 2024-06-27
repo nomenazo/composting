@@ -1,17 +1,17 @@
 clear;
 
 %initialisation des variables
-y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 5e-4 5e-4 1e-4 1e-4 1e-6 1e-6 0 0 0.710953 293 0 0 0 1e-4 0 0 0 0 0.00036];%O2init %kg/kgTM %2.6954e-4
-%y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 5e-2 5e-2 1e-4 1e-4 5e-6 5e-6 0 0 0.710953 293 0 0 0 1e-5 0 0 0 0 0.00036];%O2init %kg/kgTM %2.6954e-4
+%y0=[0.1012 0.0202 0.0075 0 0.0044 0.0008 0.010 0 0 0 0 0 5e-4 5e-4 1e-4 1e-4 1e-6 1e-6 0 0 0.86 293 0 0 0 1e-4 0 0 0 0 3e-5];%O2init %kg/kgTM %2.6954e-4
+
+y0=[0.1012 0.0202 0.0075 4e-3 6.6e-4 1.4e-6 0.010 0 0 0 0 0 5e-4 5e-4 1e-4 1e-4 1e-6 1e-6 0 0 0.9 293 0 0 0 1e-4 0 0 0 0 3e-5] ; %biochemical composition from article
 
 
+%tspan(1)=0;
+%for i=2:91
+%    tspan(i)=tspan(i-1)+24;
+%end;
 
-tspan(1)=0;
-for i=2:91
-    tspan(i)=tspan(i-1)+24;
-end;
-
-%tspan = [0 2200];
+tspan = [0 600];
 
 options = odeset( 'RelTol',1e-12,'AbsTol',1e-14);
 
@@ -74,14 +74,12 @@ NN2 = N2;
 
 NN2O = (0.028/0.044)*N2O;
 
-Cinit= 0.1288; 
+Cinit= 0.0595; 
 Ninit = 0.008/0.6;
 
 Ccompost= Cinit - CCO2 - cumsum(CCH4);
-Cemit = (CCO2+cumsum(CCH4))/Cinit;
 
 Ncompost = Ninit - NNH3- NN2 - NN2O;
-Nemit = (NNH3+NN2+NN2O)/Ninit;
 
 CNratio = Ccompost/Ncompost;
 %y(y<0)=0;
@@ -129,27 +127,14 @@ dataNH3 = [9.50523E-05	8.3184E-05	8.5979E-05	9.59316E-05	0.000113998	0.000148685
 %ylabel('NH3-N (kg/kgTM)');
 
 
-%subplot(2,1,1);
-%plot(t,NH3,'r-',t,dataNH3,'k.');
-%xlabel('time (h)');
-%ylabel('NH3 (kg/kgTM)');
-%subplot(2,1,2);
-%plot(t,NH4,'r-')
-%xlabel('time (h)');
-%ylabel('NH4 (kg/kgTM)');
-
-subplot(3,1,1);
-plot(t,Cemit);
+subplot(2,1,1);
+plot(t,NH3,'r-') ; %,t,dataNH3,'k.');
 xlabel('time (h)');
-ylabel('Cemit (-)');
-subplot(3,1,2);
-plot(t,Nemit);
+ylabel('NH3 (kg/kgTM)');
+subplot(2,1,2);
+plot(t,NH4,'r-')
 xlabel('time (h)');
-ylabel('Nemit (-)');
-subplot(3,1,3);
-plot(t,CNratio);
-xlabel('time (h)');
-ylabel('C/N');
+ylabel('NH4 (kg/kgTM)');
 
 
 %subplot(7,1,2);
