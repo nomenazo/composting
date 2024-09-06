@@ -1,4 +1,4 @@
-function dydt=compostfitted_Peng(t,y); %we add N emissions in this code
+function dydt=compostWat(t,y); %we add W evaporation
 
 
 %insolubles substrates
@@ -38,17 +38,19 @@ NH4 = y(31);
 Wvap = y(32);
 
 
+TM= 0.6; %kg total matter Komilis
 
-TM = 2.46; %kg %Peng %TM = bulk density*80%*Vreactor
 
 Ta = 285; %External temperature
 
 %kh = [0.0001 0.0378 0.2991 2.8873e-05 0.0271 0.0153 0.009 0.0025 0.0078 0.009 0.0025 0.0313];
-kh=[0.0293    0.1508    1.4563e-07    0.0053    0.1731    0.0182    0.0090    0.0070    0.0068    0.0090    0.0070    0.0068];
+kh=[0.0293    0.1508    1.4563e-07    0.0053    0.1731    0.0182    0.0090 0.0070    0.0068    0.0090    0.0070    0.0068]; %vrai
+%kh=[0.0011    0.2075    0.0017    7.8952e-06    0.2294    0.0313    0.0090    0.0246    0.1251    0.0090    0.0247    0.1198];
+%kh =[2.0580e-05    0.4387    0.7462    0.0000    0.4655    1.1000    0.0090    0.1435    0.2932    0.0090    0.0279    0.3257]
 mu = [0.2 0.18 0.1 0.12 0.1 0.1 0.03]; %specific growth rate (h-1) ma = 0.03 0.006
 bd = [0.03 0.02 0.01 0.015 0.01 0.01 0.0083]; %death rate (h-1)
 K=[6.2e-5 1e-4 0.2 0.0025 0.0064 0.0608e-5]; %kinetic parameters
-KT = [440 0.022 1 2 0.09 1]; %parameters for temperature module 0.072
+KT = [440 0.0144 1 2 0.09 1]; %parameters for temperature module 
 Yx_s= 0.35; %biomass yield on substrate kgX/kgS
 Yx_co2 = [0.445717506 0.293234476	0.165284084	0.445717506	0.293234476	0.165284084	0.445717506	0.293234476	0.165284084	0.139609659	0.445717506	0.293234476	0.165284084	0.139609659	0.41509283	0.254264706	0.160882526	0.136456284	0.19653097	0.41509283	0.254264706	0.160882526	0.136456284	0.19653097
 ]; %Yield coeff of biomass on CO2 kgX/kgCO2
@@ -71,8 +73,9 @@ kdec = K(4); %microorganisms decomposition constant
 kO2=K(5); %oxygen saturation for heterotrophic activities (kgO2/l)
 kO2nit = K(6); %oxygen saturation for nitrification (kgO2/l)
 
-Vreactor = 0.006 ; %m3 
-Vwaste = TM/513; %m3%mass/rhobiowaste
+%Vreactor = 0.002 ; %m3
+%Vreactor = 0.025; %m3
+Vwaste = 0.6/350; %m3%mass/rhobiowaste
 %Vgas = Vreactor - Vwaste; % m3
 Vgas = 0.6*Vwaste;
 R = 8.134; %Pa.m3/mol.K
@@ -99,10 +102,10 @@ A = KT (6); %surface area of heat conduction (m2)
 
 %hydrolysis constant
 kh1C = kh(1); %*1.2;	
-kh2P = kh(2)*0.5;
+kh2P = kh(2);
 kh3L = kh(3); %*5e-2;	
 kh4C = kh(4);	
-kh5P = kh(5)*0.5;	
+kh5P = kh(5);	
 kh6L = kh(6); %*5e-2;	
 kh7H = kh(7);	
 kh8CE = kh(8);	
@@ -264,7 +267,7 @@ pNH3 = khNH3*(NH4/W)*101325; %Henry law for liquid-gas interface %Pa
 mNH3 = 0.017 * pNH3 * (Vgas/(R*T)); %NH3 in the gas phase
 
 %Limitation function by the oxygen
-xO2 = 0.18; %fraction molaire de O2 dans le mélange
+xO2 = 0.16; %fraction molaire de O2 dans le mélange
 %xO2 = 0.005;
 
 khO2 = 1.4e-3; %mol/m3.Pa Henry constant for oxygen, mais devra être en fonction de la T
@@ -355,7 +358,7 @@ v43 = kdec*Xdb;
 v44 = ma * Xa  * fNH4nit * fO2nit;
 
 %denitrification
-pmaxdenit = 0.042*0.1; %*10 %kg(N2O+N2)/kgNO3.h
+pmaxdenit = 0.042*10; %kg(N2O+N2)/kgNO3.h
 
 pN2Odenit = 0.2; %kg(N2O)/kg(N2O+N2)
 
@@ -370,7 +373,7 @@ rhoair = 1.2; %kg/m3
 
 %v47 = Qair * mNH3 /(rhoair * Vgas); %NH3 emitted by aeration
 
-v47 = 0.012 * mNH3/ Vgas; %si on considère l'aération dans l'article=200ml/mn = 0.012m3/h
+v47 = 0.012 * mNH3/Vgas; %si on considère l'aération dans l'article=200ml/mn = 0.012m3/h
 
 
 %Global equations
@@ -399,8 +402,17 @@ dCO2dt = (Ymb_c_c)*v13+(Ymb_p_c)*v14+(Ymb_l_c)*v15+(Ytb_c_c)*v16+(Ytb_p_c)*v17+(
 (Ymf_h_c)*v30+(Ymf_lg_c)*v31+(Ytf_c_c)*v32+(Ytf_p_c)*v33+(Ytf_l_c)*v34+(Ytf_h_c)*v35+(Ytf_lg_c)*v36;
 
 
-%water module
-Pwvap = ((Wvap/0.018)*R*T)/Vgas 
+%Water module
+
+Pwvap = ((Wvap/0.018)*R*T)/Vgas  %Pa
+
+Ps_out = exp(11.961-(3993.7/((T-275)+233.9)))*P;
+Ps_in = exp(11.961-(3993.7/((Ta-275)+233.9)))*P;
+
+Ha_out = 0.622*(Ps_out/(P-Ps_out));
+Ha_in = 0.622*(0.4*Ps_in/(P-0.4*Ps_in)); %0.014; %
+
+%Wout = Qair*(Ha_out - Ha_in);
 klh2O = 1e-4 ;
 Ps = 10^(22.443-(2795/(T))-(1.6798*log(T)))
 Wout = klh2O *(Ps - Pwvap)
@@ -409,7 +421,7 @@ dWvapdt = klh2O * (Ps - Pwvap)
 
 dWdt = (Ymb_c_h)*v13+(Ymb_p_h)*v14+(Ymb_l_h)*v15+(Ytb_c_h)*v16+(Ytb_p_h)*v17+(Ytb_l_h)*v18+(Yma_c_h)*v19+(Yma_p_h)*v20+(Yma_l_h)*v21+...
     (Yma_h_h)*v22+(Yta_c_h)*v23+(Yta_p_h)*v24+(Yta_l_h)*v25+(Yta_h_h)*v26+(Ymf_c_h)*v27+(Ymf_p_h)*v28+(Ymf_l_h)*v29+...
-    (Ymf_h_h)*v30+(Ymf_lg_h)*v31+(Ytf_c_h)*v32+(Ytf_p_h)*v33+(Ytf_l_h)*v34+(Ytf_h_h)*v35+(Ytf_lg_h)*v36 - Qair*Wvap/rhoair *Vgas 
+    (Ymf_h_h)*v30+(Ymf_lg_h)*v31+(Ytf_c_h)*v32+(Ytf_p_h)*v33+(Ytf_l_h)*v34+(Ytf_h_h)*v35+(Ytf_lg_h)*v36 - Qair*Wvap/rhoair *Vgas %Qair*(Ha_out - Ha_in) 
 
 
 
@@ -455,4 +467,4 @@ dNH4dt = -(1/Yxa_nh4)*v44 +(Ymb_p_nh4)*v14-(Ymb_l_nh4)*v15  + (Ytb_p_nh4)*v17 -(
 
 
 dydt = [dCdt,dPdt,dLdt,dHdt,dCEdt,dLGdt,dXidt, dScdt,dSpdt,dSldt,dShdt,dSlgdt, dXmbdt,dXtbdt,dXmadt,dXtadt,dXmfdt,dXtfdt, dXdbdt, dCO2dt, dWdt,dTdt,dCH4gendt, dCH4oxidt,dCH4dt,...
-    dXadt, dNO3dt, dN2Odt, dN2dt, dNH3dt, dNH4dt, dWvapdt]'; %,dO2transdt,dO2indt]' %]';
+    dXadt, dNO3dt, dN2Odt, dN2dt, dNH3dt, dNH4dt,dWvapdt]'; %,dO2transdt,dO2indt]' %]';

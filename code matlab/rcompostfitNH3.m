@@ -1,25 +1,29 @@
-function z=rcompostfitN(kh,t);
+function z=rcompostfitNH3(kNH4,t);
 global thetag;
-thetag = kh;
+%thetag=bd;
+%thetag = Kn;
+thetag = kNH4;
+
 
 %initialisation des variables
-y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 5e-4 5e-4 1e-4 1e-4 5e-6 5e-6 0 0 0.710953 293 0 0 0 1e-5 0 0 0 0 0.00036]; %O2init %kg/kgTM %2.6954e-4
+%y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 1e-3 1e-3 1e-3 1e-3 1e-6 1e-6 0 0 0.710953 293 2.6954e-4 0 0 0]; %kg/kgTM % microorganisms 0.001
+y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 5e-4 5e-4 1e-4 1e-4 1e-6 1e-6 0 0 0.710953 293 0 0 0 1e-4 0 0 0 0 0.00036];
 
 
+%y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 1e-2 1e-2 1e-2 1e-2 1e-2 1e-2 0 0 0.710953]; %kg/kgTM
 tspan(1)=0;
 for i=2:91
    tspan(i)=tspan(i-1)+24;
 end;
 
-%tspan = [0 5000];
 
-options = odeset( 'RelTol',1e-10,'AbsTol',1e-12 ) ;%,'Maxstep', 1e-14);
-
-%options = odeset('Events', @events);
-%[t,y]=ode45_with_corrections('compostfitted',[tspan],[y0]);
+%options = odeset('NonNegative', 1:length(y0));
+%options = odeset('Events', @nonnegativeEvents, 'NonNegative', 1:length(y0));
+%[t,y]=ode15s('compostfit',[tspan],[y0]);
+options = odeset('RelTol',1e-12,'AbsTol',1e-14);
 [t,y]=ode15s('compostfit2N',[tspan],[y0],options);
-
-
+%[t,y]=ode45_with_correction_fitting('compostfit2',[tspan],[y0],options);
+%[t, y] = ode45(@(t, y) compostfit2(t, y, kh), tspan, y0, options);
 
 
 C=y(:,1);
@@ -54,14 +58,7 @@ N2=y(:,29);
 NH3=y(:,30);
 NH4=y(:,31);
 
-
-CCO2= (0.012/0.044) * CO2;
-NNH3 = (0.014/0.017)*NH3;
-
-%y = max(0,y);
-%CH4gen = max(0,CH4gen);
-y(y<0)=0;
-
+%y(y<0)=0
 simulNH3 = [NH3(1), NH3(2), NH3(3), NH3(4), NH3(5), NH3(6), NH3(7), NH3(8), NH3(9), NH3(10), NH3(11), NH3(12), ...
     NH3(13), NH3(14), NH3(15), NH3(16), NH3(17), NH3(18), NH3(19), NH3(20), NH3(21), NH3(22), NH3(23), NH3(24), ...
     NH3(25), NH3(26), NH3(27), NH3(28), NH3(29), NH3(30), NH3(31), NH3(32), NH3(33), NH3(34), NH3(35), NH3(36), ...
@@ -71,9 +68,5 @@ simulNH3 = [NH3(1), NH3(2), NH3(3), NH3(4), NH3(5), NH3(6), NH3(7), NH3(8), NH3(
     NH3(73), NH3(74), NH3(75), NH3(76), NH3(77), NH3(78), NH3(79), NH3(80), NH3(81), NH3(82), NH3(83), NH3(84), ...
     NH3(85), NH3(86), NH3(87), NH3(88), NH3(89), NH3(90), NH3(91)];
 
-
-
-
-%simulNNH3 = (0.014/0.017)*simulNH3;
 
 z= [simulNH3];

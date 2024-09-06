@@ -1,8 +1,7 @@
-function dydt=compostfit2N(t,y); %fitting with more variables than compostfit (CH4, O2)
+function dydt=compostfit2N(t,y); 
 global thetag;
-%1er essai de fitting par la constante de décès
-%bd=thetag
-kNH3 = thetag; %Mua et khNH3
+%Kn = thetag;
+kNH4 = thetag;
 
 %insolubles substrates
 C=y(1);	% carbohydrate kg/kgTM
@@ -40,15 +39,19 @@ NH3 = y(30);
 NH4 = y(31);
 
 
-TM= 0.6; %kg total matter
+TM= 0.6; %kg total matter Komilis
+
+
 Ta = 285; %External temperature
 
 %kh = [0.0001 0.0378 0.2991 2.8873e-05 0.0271 0.0153 0.009 0.0025 0.0078 0.009 0.0025 0.0313];
-kh=[0.0293    0.1508    1.4563e-07    0.0053    0.1731    0.0182    0.0090    0.0070    0.0068    0.0090    0.0070    0.0068];
-mu = [0.2 0.18 0.1 0.12 0.1 0.1]; %specific growth rate (h-1)
+kh=[0.0293    0.1508    1.4563e-07    0.0053    0.1731    0.0182    0.0090 0.0070    0.0068    0.0090    0.0070    0.0068]; %vrai
+%kh=[0.0011    0.2075    0.0017    7.8952e-06    0.2294    0.0313    0.0090    0.0246    0.1251    0.0090    0.0247    0.1198];
+%kh =[2.0580e-05    0.4387    0.7462    0.0000    0.4655    1.1000    0.0090    0.1435    0.2932    0.0090    0.0279    0.3257]
+mu = [0.2 0.18 0.1 0.12 0.1 0.1 0.03]; %specific growth rate (h-1) ma = 0.03 0.006
 bd = [0.03 0.02 0.01 0.015 0.01 0.01 0.0083]; %death rate (h-1)
 K=[6.2e-5 1e-4 0.2 0.0025 0.0064 0.0608e-5]; %kinetic parameters
-KT = [440 0.072 1 2 0.09 1]; %parameters for temperature module
+KT = [440 0.0144 1 2 0.09 1]; %parameters for temperature module 
 Yx_s= 0.35; %biomass yield on substrate kgX/kgS
 Yx_co2 = [0.445717506 0.293234476	0.165284084	0.445717506	0.293234476	0.165284084	0.445717506	0.293234476	0.165284084	0.139609659	0.445717506	0.293234476	0.165284084	0.139609659	0.41509283	0.254264706	0.160882526	0.136456284	0.19653097	0.41509283	0.254264706	0.160882526	0.136456284	0.19653097
 ]; %Yield coeff of biomass on CO2 kgX/kgCO2
@@ -59,10 +62,9 @@ Yx_O2mol = [0.173553719	0.098678414	0.044403196	0.173553719	0.098678414	0.044403
 Yx_o2 = [0.61286157	0.34845815	0.156798785	0.61286157	0.34845815	0.156798785	0.61286157	0.34845815	0.156798785	0.191963281	0.61286157	0.34845815	0.156798785	0.191963281	0.592664534	0.341834717	0.148720799	0.189935871	0.210088681	0.592664534	0.341834717	0.148720799	0.189935871	0.210088681	0.040522541
 ]; %Yield coeff biomass on O2 kgX/kgO2
 Yxa_no3 = 0.0390553; %Yield coeff of autotroph biomass on NO3 kgXa/kgNO3
-Yxa_nh4 = 0.13; %Yield coeff of autotroph biomass on NO3 kgXa/kgNH4
+%Yxa_nh4 = 0.13; %Yield coeff of autotroph biomass on NH4 kgXa/kgNH4
 Yx_nh4 = [6.64705882352941	2.490625447	6.647058824	6.64705882352941	2.490625447	6.647058824	0.705882353	2.490625447	6.647058824	6.647058824	0.705882353	2.490625447	6.647058824	6.647058824	14.52941176	2.069869946	14.52941176	14.52941176	14.52941176	14.52941176	2.069869946	14.52941176	14.52941176	14.52941176
 ]; %Yield coeff of heterotrophic biomass on NH3 kgX/kgNH3
-%kinXa = 0.003; 
 
 
 Ks = K(1); %substrate saturation for monod kinetics (kgSc/dm3W)
@@ -72,9 +74,14 @@ kdec = K(4); %microorganisms decomposition constant
 kO2=K(5); %oxygen saturation for heterotrophic activities (kgO2/l)
 kO2nit = K(6); %oxygen saturation for nitrification (kgO2/l)
 
-Vreactor = 0.002 ; %m3
+Yxa_nh4 = kNH4(1);
+Kn = kNH4(2);
+
+%Vreactor = 0.002 ; %m3
+%Vreactor = 0.025; %m3
 Vwaste = 0.6/350; %m3%mass/rhobiowaste
-Vgas = Vreactor - Vwaste; % m3
+%Vgas = Vreactor - Vwaste; % m3
+Vgas = 0.6*Vwaste;
 R = 8.134; %Pa.m3/mol.K
 
 %Methane module parameters
@@ -99,10 +106,10 @@ A = KT (6); %surface area of heat conduction (m2)
 
 %hydrolysis constant
 kh1C = kh(1); %*1.2;	
-kh2P = kh(2)*0.5;
+kh2P = kh(2);
 kh3L = kh(3); %*5e-2;	
 kh4C = kh(4);	
-kh5P = kh(5)*0.5;	
+kh5P = kh(5);	
 kh6L = kh(6); %*5e-2;	
 kh7H = kh(7);	
 kh8CE = kh(8);	
@@ -118,7 +125,7 @@ mma = mu(3);
 mta = mu(4);
 mmf = mu(5);
 mtf = mu(6);
-%ma = mu(7)*0.1; %growth rate of autotroph biomass
+ma = mu(7)*0.1; %growth rate of autotroph biomass
 
 %death rate
 bmb = bd(1)*0.4;
@@ -128,11 +135,6 @@ bta = bd(4)*1;
 bmf = bd(5)*1;
 btf = bd(6)*1;
 ba = bd(7); %death constant of autotroph biomass
-
-%kinetic of Xa
-ma = kNH3(1);
-khNH3 = kNH3(2);
-
 
 %Inverse of yield of biomass on CO2
 Ymb_c_c = 1/Yx_co2(1) ; %MB on Sc
@@ -262,8 +264,10 @@ fT1 = ((Ti-Tmax1)*(Ti-Tmin1)^2)/((Topt1-Tmin1)*((Topt1-Tmin1) *(Ti-Topt1)-(Topt1
 %fT = 0.01;
 
 %Ammoniac equilibrum in liquid-gas interface
-%khNH3 = 1exp(160.559 - (8621.06/T)-(25.6767*log(T))+(0.035388*T)); %Pa.mol.l-1
-pNH3 = khNH3*(NH4/W); %*101325; %Henry law for liquid-gas interface %Pa
+
+khNH3 = exp(160.559 - (8621.06/T)-(25.6767*log(T))+(0.035388*T)); %atm.mol.l-1
+%khNH3 = 0.6;
+pNH3 = khNH3*(NH4/W)*101325; %Henry law for liquid-gas interface %Pa
 mNH3 = 0.017 * pNH3 * (Vgas/(R*T)); %NH3 in the gas phase
 
 %Limitation function by the oxygen
@@ -282,7 +286,7 @@ fO2nit = O2diss/(kO2nit + O2diss); %autotroph activity
 
 
 %Limitation function of ammonium for nitrification
-Kn = 10^((0.051*(T-275)-7.158)); %kg/l
+%Kn = 10^((0.051*(T-275)-7.158)); %kg/l
 fNH4nit = (NH4/W)/(Kn + (NH4/W));
 
 %Limitation of denitrification by NO3
@@ -291,9 +295,9 @@ flimNO3 = (NO3/W)/(kNO3+(NO3/W));
 
 %Limitation of denitrification by temperature
 if T<286
-    fTdenit =exp((((T-275)-11)*log(89)-9*log(2.1))/10);
+    fTdenit = exp((((T-275)-11)*log(89)-9*log(2.1))/10);
 else
-    fTdenit =exp((((T-275)-20)*log(2.1))/10);
+    fTdenit = exp((((T-275)-20)*log(2.1))/10);
 end;
 
 
@@ -358,7 +362,7 @@ v43 = kdec*Xdb;
 v44 = ma * Xa  * fNH4nit * fO2nit;
 
 %denitrification
-pmaxdenit = 0.042; %kg(N2O+N2)/kgNO3.h
+pmaxdenit = 0.042*10; %kg(N2O+N2)/kgNO3.h
 
 pN2Odenit = 0.2; %kg(N2O)/kg(N2O+N2)
 
@@ -372,7 +376,9 @@ v46 = ba * Xa;
 rhoair = 1.2; %kg/m3
 
 %v47 = Qair * mNH3 /(rhoair * Vgas); %NH3 emitted by aeration
-v47 = 0.012 * mNH3/Vgas;
+
+v47 = 0.012 * mNH3/Vgas; %si on considère l'aération dans l'article=200ml/mn = 0.012m3/h
+
 
 %Global equations
 dCdt= -v1 -v4;
@@ -398,10 +404,21 @@ dXdbdt = v37+v38+v39+v40+v41+v42-v43;
 dCO2dt = (Ymb_c_c)*v13+(Ymb_p_c)*v14+(Ymb_l_c)*v15+(Ytb_c_c)*v16+(Ytb_p_c)*v17+(Ytb_l_c)*v18+(Yma_c_c)*v19+(Yma_p_c)*v20+(Yma_l_c)*v21+...
 (Yma_h_c)*v22+(Yta_c_c)*v23+(Yta_p_c)*v24+(Yta_l_c)*v25+(Yta_h_c)*v26+(Ymf_c_c)*v27+(Ymf_p_c)*v28+(Ymf_l_c)*v29+...
 (Ymf_h_c)*v30+(Ymf_lg_c)*v31+(Ytf_c_c)*v32+(Ytf_p_c)*v33+(Ytf_l_c)*v34+(Ytf_h_c)*v35+(Ytf_lg_c)*v36;
+
+
+%Water module
+
+P = (ntot*R*T)/Vwaste;  %Pa
+
+Ps_out = exp(11.961-(3993.7/((T-275)+233.9)))*P;
+%Ps_in = exp(11.961-(3993.7/((Ta)+233.9)))*P;
+
+Ha_out = 0.622*(Ps_out/(P-Ps_out));
+Ha_in = 0.014; %0.622*(0.4*Ps_in/(P-0.4*Ps_in));
             
 dWdt = (Ymb_c_h)*v13+(Ymb_p_h)*v14+(Ymb_l_h)*v15+(Ytb_c_h)*v16+(Ytb_p_h)*v17+(Ytb_l_h)*v18+(Yma_c_h)*v19+(Yma_p_h)*v20+(Yma_l_h)*v21+...
     (Yma_h_h)*v22+(Yta_c_h)*v23+(Yta_p_h)*v24+(Yta_l_h)*v25+(Yta_h_h)*v26+(Ymf_c_h)*v27+(Ymf_p_h)*v28+(Ymf_l_h)*v29+...
-    (Ymf_h_h)*v30+(Ymf_lg_h)*v31+(Ytf_c_h)*v32+(Ytf_p_h)*v33+(Ytf_l_h)*v34+(Ytf_h_h)*v35+(Ytf_lg_h)*v36; 
+    (Ymf_h_h)*v30+(Ymf_lg_h)*v31+(Ytf_c_h)*v32+(Ytf_p_h)*v33+(Ytf_l_h)*v34+(Ytf_h_h)*v35+(Ytf_lg_h)*v36- Qair*(Ha_out - Ha_in); 
 
 
 
@@ -439,12 +456,12 @@ dN2dt = (1 - pN2Odenit)*v45;
 
 dNH3dt = v47;
 
-dNH4dt = - (Ymb_c_nh4)*v13+(Ymb_p_nh4)*v14-(Ymb_l_nh4)*v15-(Ytb_c_nh4)*v16+(Ytb_p_nh4)*v17-(Ytb_l_nh4)*v18-(Yma_c_nh4)*v19+(Yma_p_nh4)*v20-(Yma_l_nh4)*v21-...
+dNH4dt = -(1/Yxa_nh4)*v44 +(Ymb_p_nh4)*v14-(Ymb_l_nh4)*v15  + (Ytb_p_nh4)*v17 -(Ytb_l_nh4)*v18 -(Yma_c_nh4)*v19+(Yma_p_nh4)*v20-(Yma_l_nh4)*v21-...
 (Yma_h_nh4)*v22-(Yta_c_nh4)*v23+(Yta_p_nh4)*v24-(Yta_l_nh4)*v25-(Yta_h_nh4)*v26-(Ymf_c_nh4)*v27+(Ymf_p_c)*v28-(Ymf_l_nh4)*v29-...
-(Ymf_h_nh4)*v30-(Ymf_lg_nh4)*v31-(Ytf_c_nh4)*v32+(Ytf_p_c)*v33-(Ytf_l_nh4)*v34-(Ytf_h_nh4)*v35-(Ytf_lg_nh4)*v36-(1/Yxa_nh4)*v44 - v47;
+(Ymf_h_nh4)*v30-(Ymf_lg_nh4)*v31-(Ytf_c_nh4)*v32+(Ytf_p_c)*v33-(Ytf_l_nh4)*v34-(Ytf_h_nh4)*v35-(Ytf_lg_nh4)*v36- (Ymb_c_nh4)*v13-(Ytb_c_nh4)*v16 - v47;
 
 
 
 
 dydt = [dCdt,dPdt,dLdt,dHdt,dCEdt,dLGdt,dXidt, dScdt,dSpdt,dSldt,dShdt,dSlgdt, dXmbdt,dXtbdt,dXmadt,dXtadt,dXmfdt,dXtfdt, dXdbdt, dCO2dt, dWdt,dTdt,dCH4gendt, dCH4oxidt,dCH4dt,...
-    dXadt, dNO3dt, dN2Odt, dN2dt, dNH3dt, dNH4dt]'; %,dO2transdt,dO2indt]' %]';
+    dXadt, dNO3dt, dN2Odt, dN2dt, dNH3dt, dNH4dt]';

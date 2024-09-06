@@ -19,15 +19,15 @@ dataNH3 = [9.50523E-05	8.3184E-05	8.5979E-05	9.59316E-05	0.000113998	0.000148685
     0.01003884	0.010053253	0.010052459	0.010067748	0.010092195	0.010103562	0.010108216	0.010127495	0.010150719	0.010153972	...
     0.010160904	0.010176637	0.010192993	0.010204598	0.010211709	0.010217376	0.010233124	0.01024688	0.010250307	0.010252842	0.01027212	0.010298132];
 
-kNH30 = [0.003 0.7] ;
+kNH40 = [0.13 2e-5] ;
 
 LB = [0 0]';
 UB =[inf inf]';
 
-options = optimoptions('lsqcurvefit','StepTolerance', 1e-32,'FunctionTolerance', 1e-15,'OptimalityTolerance', 1e-10,'Display', 'iter'); %, 'Maxiterations',35000,'MaxFunctionEvaluations', 3000,
+options = optimoptions('lsqcurvefit','MaxIterations',10000,'StepTolerance', 1e-32,'FunctionTolerance', 1e-15,'OptimalityTolerance', 1e-10,'MaxFunctionEvaluations', 10000, 'Display', 'iter'); %,,
 
-[kNH3]=lsqcurvefit('rcompostfitN',kNH30,t,dataNH3,LB, UB, options)
-yfit=rcompostfitN(kNH3,t);
+[kNH4]=lsqcurvefit('rcompostfitNH3',kNH40,t,dataNH3,LB, UB, options)
+yfit=rcompostfitN(kNH4,t);
 NH3fit=yfit(1,:);
 
 subplot(1,1,1);

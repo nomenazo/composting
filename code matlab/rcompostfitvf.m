@@ -1,27 +1,29 @@
-function z=rcompostfitcumul(kh,t);
+function z=rcompostfitvf(kh,t);
 global thetag;
 %thetag=bd;
 thetag = kh;
 
 %initialisation des variables
-%y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 1e-3 1e-3 1e-3 1e-3 1e-6 1e-6 0 0 0.710953 293 2.6954e-4 0 0 0]; %kg/kgTM % microorganisms 0.001
-y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 5e-4 5e-4 1e-4 1e-4 1e-6 1e-6 0 0 0.710953 293 2.6954e-4 0 0 0];
+y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 5e-4 5e-4 1e-4 1e-4 1e-6 1e-6 0 0 0.710953 293 0 0 0 1e-4 0 0 0 0 0.00036];%O2init %kg/kgTM %2.6954e-4
+%y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 5e-2 5e-2 1e-4 1e-4 5e-6 5e-6 0 0 0.710953 293 0 0 0 1e-5 0 0 0 0 0.00036];%O2init %kg/kgTM %2.6954e-4
 
 
-%y0=[0.203655 0.049914 0.025361 0 0.001704 0.000159 0.010254 0 0 0 0 0 1e-2 1e-2 1e-2 1e-2 1e-2 1e-2 0 0 0.710953]; %kg/kgTM
+
 tspan(1)=0;
 for i=2:96
    tspan(i)=tspan(i-1)+24;
 end;
 
+%tspan = [0 2200];
 
-%options = odeset('NonNegative', 1:length(y0));
-%options = odeset('Events', @nonnegativeEvents, 'NonNegative', 1:length(y0));
-%[t,y]=ode15s('compostfit',[tspan],[y0]);
-options = odeset('RelTol',1e-12,'AbsTol',1e-14);
-[t,y]=ode15s('compostfit2',[tspan],[y0],options);
-%[t,y]=ode45_with_correction_fitting('compostfit2',[tspan],[y0],options);
-%[t, y] = ode45(@(t, y) compostfit2(t, y, kh), tspan, y0, options);
+options = odeset( 'RelTol',1e-12,'AbsTol',1e-14);
+
+%options = odeset('Events', @events);
+%[t,y]=ode45_with_corrections('compostfitted',[tspan],[y0]);
+[t,y]=ode15s('compostfitvf',[tspan],[y0],options)
+
+
+
 
 C=y(:,1);
 P=y(:,2);
@@ -45,14 +47,47 @@ Xdb=y(:,19);
 CO2=y(:,20);
 W=y(:,21);
 T=y(:,22);
-O2diss=y(:,23);
-CH4gen=y(:,24);
-CH4oxi=y(:,25);
-CH4=y(:,26);
-%O2trans=y(:,24);
-%O2in=y(:,25);
+CH4gen=y(:,23);
+CH4oxi=y(:,24);
+CH4=y(:,25);
+Xa=y(:,26);
+NO3=y(:,27);
+N2O=y(:,28);
+N2=y(:,29);
+NH3=y(:,30);
+NH4=y(:,31);
 
-%y(y<0)=0
+
+
+
+
+%y = max(0,y);
+CH4 = max(0,CH4);
+
+NH4 = max(0,NH4);
+
+CCO2= (0.012/0.044) * CO2;
+
+CCH4 = (0.012/0.016)*CH4;
+
+NNH3 = (0.014/0.017)*NH3;
+
+
+NN2 = N2;
+
+NN2O = (0.028/0.044)*N2O;
+
+Cinit= 0.1288; 
+Ninit = 0.008/0.6;
+
+Ccompost= Cinit - CCO2 - cumsum(CCH4);
+Cemit = (CCO2+cumsum(CCH4))/Cinit;
+
+Ncompost = Ninit - NNH3- NN2 - NN2O;
+Nemit = (NNH3+NN2+NN2O)/Ninit;
+
+CNratio = Ccompost/Ncompost;
+
 simulCO2 = [CO2(1), CO2(2), CO2(3), CO2(4), CO2(5), CO2(6), CO2(7), CO2(8), CO2(9), CO2(10), CO2(11), CO2(12), ...
     CO2(13), CO2(14), CO2(15), CO2(16), CO2(17), CO2(18), CO2(19), CO2(20), CO2(21), CO2(22), CO2(23), CO2(24), ...
     CO2(25), CO2(26), CO2(27), CO2(28), CO2(29), CO2(30), CO2(31), CO2(32), CO2(33), CO2(34), CO2(35), CO2(36), ...

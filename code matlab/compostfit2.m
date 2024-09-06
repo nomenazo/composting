@@ -89,12 +89,12 @@ U = KT(5); %heat transfer coefficient of wall (kJ/m2.K.h) %%valeur dans de Guard
 A = KT (6); %surface area of heat conduction (m2)
 
 %hydrolysis constant
-kh1C = kh(1);	
-kh2P = kh(2);
-kh3L = kh(3);	
+kh1C = kh(1); %*1.2;	
+kh2P = kh(2)*0.5;
+kh3L = kh(3); %*5e-2;	
 kh4C = kh(4);	
-kh5P = kh(5);	
-kh6L = kh(6);	
+kh5P = kh(5)*0.5;	
+kh6L = kh(6); %*5e-2;	
 kh7H = kh(7);	
 kh8CE = kh(8);	
 kh9LG = kh(9);	
@@ -103,12 +103,13 @@ kh11CE = kh(11);
 kh12LG = kh(12);
 
 %growth rate
-mmb = mu(1)*1.2;
-mtb = mu(2)*1.2;
+mmb = mu(1);
+mtb = mu(2);
 mma = mu(3);
 mta = mu(4);
 mmf = mu(5);
 mtf = mu(6);
+ma = mu(7)*0.1;
 
 %death rate
 bmb = bd(1)*0.4;
@@ -117,6 +118,8 @@ bma = bd(3)*1;
 bta = bd(4)*1;
 bmf = bd(5)*1;
 btf = bd(6)*1;
+ba = bd(7); %death constant of autotroph biomass
+
 
 %Inverse of yield of biomass on CO2
 Ymb_c_c = 1/Yx_co2(1) ; %MB on Sc
