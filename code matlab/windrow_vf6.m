@@ -45,8 +45,8 @@ NH3gaz = y(38);
 
 
 
-%simulation FW+copeaux de bois 3:1 ; 8:1
-Vtotal = (((3*1.5)/2)*6)/100000; %Un andain de 3m de larg, 1.5m de H, 20m de L
+%simulation FW+copeaux de bois 3:1 ; 8:1F
+Vtotal = (((3*1.5)/2)*6)/100000; %Un andain de 3m de larg, 1.5m de H, 6m de L
 BD = 750; %599; %   ; %kg/m3 for 2,9: 1 of FW/Wood; 
 TM= Vtotal * BD;
 FAS = 0.21 ; %0.4; % 
@@ -61,8 +61,8 @@ kh=[0.0293    0.1508    1.4563e-07    0.0053    0.1731    0.0182    0.0090 0.007
 %kh =[2.0580e-05    0.4387    0.7462    0.0000    0.4655    1.1000    0.0090    0.1435    0.2932    0.0090    0.0279    0.3257]
 mu = [0.2 0.18 0.1 0.12 0.1 0.1 0.03]; %specific growth rate (h-1) ma = 0.03 0.006
 bd = [0.03 0.02 0.01 0.015 0.01 0.01 0.0083]; %death rate (h-1)
-K=[6.2e-5 1e-4 0.307 0.0025 0.007e-6 0.0608e-5]; %kinetic parameters
-KT = [440 0.3 1 2 0.09 4]; %parameters for temperature module, Qair in l/mn.kg of waste 0.9
+K=[6.2e-5 1e-4 0.31 0.0025 0.007e-6 0.0608e-5]; %kinetic parameters fi= 0.307
+KT = [440 0.3 1 2 0.09 10]; %parameters for temperature module, Qair in l/mn.kg of waste 0.9 
 Yx_s= 0.35; %biomass yield on substrate kgX/kgS
 Yx_co2 = [0.445717506 0.26543624	0.165284084	0.445717506	0.26543624	0.165284084	0.445717506	0.26543624	0.165284084	0.139609659	0.445717506	0.26543624	0.165284084	0.139609659	0.41509283	0.254264706	0.160882526	0.136456284	0.19653097	0.41509283	0.254264706	0.160882526	0.136456284	0.19653097
 ]; %Yield coeff of biomass on CO2 kgX/kgCO2
@@ -107,7 +107,7 @@ Kch4_O2 = 0.033; %mol/l Michelis constant for oxygen in methane oxidation
 
 
 hbio = KT(1); %chaleur dégagée par mol d'oxygène consommée (kJ/mol d'O2)
-Qair = KT(2)*1e-3*TM*rhoair*60; %kg/h
+Qair  =  KT(2)*1e-3*TM*rhoair*60; %kg/h %  %passive 0.00396*TM /0.4;%
 Ca = KT(3); %Capacité calorifique de l'air sec (kJ/K.kg)
 Cw = KT(4); %Capacité calorique des biodéchets (kJ/K.kg)
 U = KT(5); %heat transfer coefficient of wall (kJ/m2.K.h) %%valeur dans de Guardia 2012 : 7W/m2.C = 0.09 kJ/m2.h.K
@@ -381,8 +381,9 @@ v46 = ba * Xa;
  %kg/m3
 
 v47 = Qair * NH3gaz /((CO2+CH4+N2+NH3gaz+N2O+O2gaz)*TM);
-%v47 = Qair * mNH3 /(Vgas*rhoair);
-%((CO2+CH4+N2+mNH3+N2O+O2gaz)*TM);
+%v47 = Qair * NH3 /(Vgas*rhoair);
+%((CO2+CH4+N2+mNH3+N2O+O2g
+% az)*TM);
 %; %NH3 emitted by aeration
 
 %v47 = 0.012*10 * mNH3/Vgas %si on considère l'aération dans l'article=200ml/mn = 0.012m3/h
@@ -393,7 +394,7 @@ ntot = ((CO2/0.044)+(CH4/0.016)+(NH3gaz/0.017)+(N2O/0.044)+(N2/0.028)+(Wvap/0.01
 
 %Global equations
 dCdt= -v1 -v4;
-dPdt =   -v5 -v2 + 0.69*(v43+v46);
+dPdt =   -v5 -v2 + 0.7*(v43+v46); %0.69
 dLdt = -v3-v6;
 dHdt= -v7-v10;
 dCEdt = -v8-v11;
@@ -500,7 +501,7 @@ dXadt = v44 - v46;
 
 dNO3dt = (1/Yxa_no3)*v44 - v45;
 
-dN2Odt = 0.0710*v45; %pN2Odenit*v45;
+dN2Odt =0.0710*v45; %pN2Odenit*v45; 0.0710
 
 dN2dt = 0.181*v45; %(1 - pN2Odenit)*v45;
 
@@ -512,7 +513,7 @@ klaNH4 = 100*exp(0.03*(T-298));
 
 khNH3 = 101325* exp(160.559 - (8621.06/T)-(25.6767*log(T))+(0.035388*T)) ; %Pa.l/mol
 
-NH4eq = 6e-4*((NH3gaz*R*T)/(Vgas*0.017))*W*0.017*TM ; %kg/kgTM
+NH4eq =6e-4*((NH3gaz*R*T)/(Vgas*0.017))*W*0.017*TM ; %kg/kgTM 6e-4
 
 dNH3gazdt = klaNH4*(NH4-NH4eq) - v47;
 

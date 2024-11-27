@@ -107,17 +107,27 @@ ON2O = (0.016/0.044)*N2O;
 OO2diss = O2diss;
 OO2gas = O2gaz;
 
-Cinit =0.1627; %Finland 8_1
+%Cinit =0.1627;
+Cinit = (C(1)*(6*0.012/0.180)) + (P(1)*(16*0.012/0.352)) + (L(1)*(25*0.012/0.393))+...
+    (H(1)*(10*0.012/0.282))+(CE(1)*(6*0.012/0.180))+(LG(1)*(20*0.012/0.366)) +(Xmb(1)*(5*0.012/0.113))+(Xtb(1)*(5*0.012/0.113))+(Xma(1)*(5*0.012/0.113))+...
+    (Xta(1)*(5*0.012/0.113))+(Xmf(1)*(10*0.012/0.247))+(Xtf(1)*(10*0.012/0.247))+(Xa(1)*(5*0.012/113));
+
+Ninit = (P(1)*(4*0.014/0.352)) + ((Xmb(1)*(1*0.014/0.113))+(Xtb(1)*(1*0.014/0.113))+(Xma(1)*(1*0.014/0.113))+...
+    (Xta(1)*(1*0.014/0.113))+(Xmf(1)*(1*0.014/0.247))+(Xtf(1)*(1*0.014/0.247))+(Xa(1)*(1*0.014/0.113)));
+%Finland 8_1
 % 0.1925; %F_3_1
 % 0.1927; %It_3_1 
 %0.1623; %It_8_1 
-% 
+% 0.9797
+
 %
 
-Ninit =0.0062; %F_8_1 
+%Ninit =0.0062; %F_8_1 
 % 0.0053; %F_3_1 
 % 0.0062; %It_3_1; 
 % 0.0074; %It_8_1 
+  
+
 
 Hinit=0.096 ; %F_8_1
 Oinit = 0.705+5e-2+0.003+21.3425
@@ -153,24 +163,7 @@ CNratio = Ccompost/Ncompost;
 
 
 
-subplot(5,1,1);
-plot(t,CO2,'r-'); %,texp,dataNH3,'k.');
-ylabel('CO2');
-subplot(5,1,2);
-plot(t,NH3,'r-')
-ylabel('NH3');
-subplot(5,1,3);
-plot(t,N2O); 
-%title('Production of N2O');
-ylabel('N2O');
-subplot(5,1,4);
-plot(t,CH4);
-%title('Production of CH4');
-ylabel('CH4');
-subplot(5,1,5);
-plot(t,W);
-xlabel('time (h)');
-ylabel('W');
+
 
 %%final composition
 %emissions
@@ -256,7 +249,7 @@ Horg = 0;
 Oorg = 0;
 Norg = 0;
 
-% Boucle pour calculer la masse de carbone pour chaque composé
+% Boucle pour calculer la masse des élémnets pour chaque composé
 for i = 1:length(compounds)
     end_value = eval([compounds{i}, '(end)']); % Récupérer la valeur finale du composé
     C_value = ((end_value / Mmol(i)) * atomC(i) * 12e-3) / Cinit;
@@ -294,7 +287,7 @@ for i = 1:length(biomass)
     C_value_X = ((end_value_X / Mmol_X(i)) * atomC_X(i) * 12e-3) / Cinit;
     H_value_X = ((end_value_X / Mmol_X(i)) * atomH_X(i) * 1e-3) / Hinit;
     O_value_X = ((end_value_X / Mmol_X(i)) * atomO_X(i) * 16e-3) / Oinit;
-    N_value_X = ((end_value_X / Mmol(i)) * atomN_X(i) * 14e-3) / Ninit;
+    N_value_X = ((end_value_X / Mmol_X(i)) * atomN_X(i) * 14e-3) / Ninit;
     Cbio = Cbio + C_value_X;
     Hbio = Hbio + H_value_X;
     Obio = Obio + O_value_X;
@@ -315,8 +308,49 @@ Ncompostcheck = (Norg +Nbio +Nmincum + 0.1974)*Ninit;
 
 Nmineral = (Nmincum)/(Norg +Nbio +Nmincum+ 0.1974);
 
+%valeurs initiales des variables
+%compound
+%%Carbon
+C_compound_init = ((C(1)*(6*0.012/0.180)) + (P(1)*(16*0.012/0.352)) + (L(1)*(25*0.012/0.393))+...
+    (H(1)*(10*0.012/0.282))+(CE(1)*(6*0.012/0.180))+(LG(1)*(20*0.012/0.366)))/Cinit;
+
+C_biomass_init = ((Xmb(1)*(5*0.012/0.113))+(Xtb(1)*(5*0.012/0.113))+(Xma(1)*(5*0.012/0.113))+...
+    (Xta(1)*(5*0.012/0.113))+(Xmf(1)*(10*0.012/0.247))+(Xtf(1)*(10*0.012/0.247)))/Cinit;
+
+%%Nitrogen
+N_compound_init = (P(1)*(4*0.014/0.352))/Ninit;
+
+N_biomass_init = ((Xmb(1)*(1*0.014/0.113))+(Xtb(1)*(1*0.014/0.113))+(Xma(1)*(1*0.014/0.113))+...
+    (Xta(1)*(1*0.014/0.113))+(Xmf(1)*(1*0.014/0.247))+(Xtf(1)*(1*0.014/0.247)))/Ninit;
 
 
+
+%%sankey diagram
+%for C
+C_link = {'Ccompound', 'Cinit', C_compound_init; 'Cbioinit', 'Cinit', C_biomass_init;'Cinit','Cemit', Cemitcum ; 'Cinit', 'Corg', Corg ; 'Cinit', 'Cbiomass', Cbio;
+    'Cinit', 'Cinert', C_Xi};
+
+N_link = {'Ncompound', 'Ninit', N_compound_init; 'Nbioinit', 'Ninit', N_biomass_init;'Ninit','Nemit', Nemitcum ; 'Ninit', 'Norg', Norg ;
+    'Ninit', 'Ninert', N_Xi; 'Ninit', 'Nmin', Nmincum; 'Ninit', 'Nbiomass', Nbio; 'Norg','Ncompost', Norg; 'Nbiomass', 'Ncompost', Nbio;
+    'Nmin','Ncompost', Nmincum; 'Ninert','Ncompost', N_Xi };
+
+
+SK.RenderingMethod='interp';  
+% 修改对齐方式(Set alignment)
+% 'up'/'down'/'center'(default)
+SK.Align='center';
+% 修改文本位置(Set text location)
+% 'left'(default)/'right'/'top'/'center'/'bottom'
+SK.LabelLocation='top';
+SK.Sep=.1;
+% 开始绘图(Start drawing)
+
+SK_C=SSankey(C_link(:,1),C_link(:,2), C_link(:,3));
+
+SK_N=SSankey(N_link(:,1),N_link(:,2), N_link(:,3));
+
+SK_C.draw()
+%SK_N.draw()
 
 
 
